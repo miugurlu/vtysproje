@@ -1,0 +1,55 @@
+CREATE TABLE gorusme (
+    gorusme_no INTEGER PRIMARY KEY,
+    musteri_id INTEGER,
+    musteri_ad_soyad VARCHAR(255),
+    gorusme_konusu VARCHAR(255),
+    gorusme_tarihi DATE,
+    gorusme_baslama_saati TIME,
+    gorusme_bitis_saati TIME,
+    gorusme_durum VARCHAR(255)
+);
+
+
+CREATE TABLE itirazlar (
+  itiraz_no INTEGER PRIMARY KEY,
+  temsilci_no INTEGER,
+  temsilci_ad_soyad VARCHAR(255),
+  itiraz_aciklamasi VARCHAR(255),
+  itiraz_tarihi DATE
+);
+
+
+CREATE TABLE primler (
+  prim_no INTEGER PRIMARY KEY,
+  prim_miktari INTEGER,
+  prim_tarihi DATE
+);
+
+
+CREATE TABLE musteri_temsilcisi (
+  musteri_temsilcisi_no INTEGER PRIMARY KEY,
+  musteri_temsilcisi_ad_soyad VARCHAR(255),
+  gorusme_no INTEGER,
+  itiraz_no INTEGER,
+  prim_no INTEGER,
+  FOREIGN KEY (gorusme_no) REFERENCES gorusme(gorusme_no),
+  FOREIGN KEY (itiraz_no) REFERENCES itirazlar(itiraz_no),
+  FOREIGN KEY (prim_no) REFERENCES primler(prim_no)
+);
+
+
+CREATE TABLE takim_lideri (
+  takim_lideri_no INTEGER PRIMARY KEY,
+  takimlideri_ad_soyad VARCHAR(255),
+  musteri_temsilcisi_no INTEGER,
+  FOREIGN KEY (musteri_temsilcisi_no) REFERENCES musteri_temsilcisi(musteri_temsilcisi_no)
+);
+
+
+
+CREATE TABLE grup_yoneticisi (
+  grup_yöneticisi_no INTEGER PRIMARY KEY,
+  grup_yöneticisi_ad_soyad VARCHAR(255),
+  takim_lideri_no INTEGER,
+  FOREIGN KEY (takim_lideri_no) REFERENCES takim_lideri(takim_lideri_no)
+);
