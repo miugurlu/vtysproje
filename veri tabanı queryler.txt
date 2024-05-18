@@ -1,6 +1,21 @@
+USE vtysproje; 
+CREATE TABLE grup_yoneticisi (
+    grup_yoneticisi_no INT AUTO_INCREMENT PRIMARY KEY,
+    grup_yoneticisi_ad_soyad VARCHAR(255),
+    sicil_no VARCHAR(255)
+);
+
+CREATE TABLE takim_lideri (
+    takim_lideri_no INT AUTO_INCREMENT PRIMARY KEY,
+    takim_lideri_ad_soyad VARCHAR(255),
+    sicil_no VARCHAR(255),
+    grup_yoneticisi_no INT,
+    FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
+);
+
 CREATE TABLE gorusme (
-    gorusme_no INTEGER PRIMARY KEY,
-    musteri_id INTEGER,
+    gorusme_no INT AUTO_INCREMENT PRIMARY KEY,
+    musteri_id INT,
     musteri_ad_soyad VARCHAR(255),
     gorusme_konusu VARCHAR(255),
     gorusme_tarihi DATE,
@@ -10,52 +25,42 @@ CREATE TABLE gorusme (
 );
 
 CREATE TABLE itirazlar (
-    itiraz_no INTEGER PRIMARY KEY,
-    temsilci_no INTEGER,
+    itiraz_no INT AUTO_INCREMENT PRIMARY KEY,
+    temsilci_no INT,
     temsilci_ad_soyad VARCHAR(255),
     itiraz_aciklamasi VARCHAR(255),
     itiraz_tarihi DATE
 );
 
 CREATE TABLE primler (
-    prim_no INTEGER PRIMARY KEY,
-    prim_miktari INTEGER,
+    prim_no INT AUTO_INCREMENT PRIMARY KEY,
+    prim_miktari INT,
     prim_tarihi DATE
 );
 
 CREATE TABLE musteri_temsilcisi (
-    musteri_temsilcisi_no INTEGER PRIMARY KEY,
+    musteri_temsilcisi_no INT AUTO_INCREMENT PRIMARY KEY,
     musteri_temsilcisi_ad_soyad VARCHAR(255),
-    gorusme_no INTEGER,
-    itiraz_no INTEGER,
-    prim_no INTEGER,
-    sicil_no VARCHAR(255) UNIQUE,
+    gorusme_no INT,
+    itiraz_no INT,
+    prim_no INT,
+    sicil_no VARCHAR(255),
+    takim_lideri_no INT,
     FOREIGN KEY (gorusme_no) REFERENCES gorusme(gorusme_no),
     FOREIGN KEY (itiraz_no) REFERENCES itirazlar(itiraz_no),
-    FOREIGN KEY (prim_no) REFERENCES primler(prim_no)
-);
-
-CREATE TABLE takim_lideri (
-    takim_lideri_no INTEGER PRIMARY KEY,
-    takim_lideri_ad_soyad VARCHAR(255),
-    musteri_temsilcisi_no INTEGER,
-    sicil_no VARCHAR(255) UNIQUE,
-    FOREIGN KEY (musteri_temsilcisi_no) REFERENCES musteri_temsilcisi(musteri_temsilcisi_no)
-);
-
-CREATE TABLE grup_yoneticisi (
-    grup_yoneticisi_no INTEGER PRIMARY KEY,
-    grup_yoneticisi_ad_soyad VARCHAR(255),
-    takim_lideri_no INTEGER,
-    sicil_no VARCHAR(255) UNIQUE,
+    FOREIGN KEY (prim_no) REFERENCES primler(prim_no),
     FOREIGN KEY (takim_lideri_no) REFERENCES takim_lideri(takim_lideri_no)
 );
 
-CREATE TABLE giris_bilgileri (
-    giris_id INTEGER PRIMARY KEY,
+CREATE TABLE kullanicilar (
+    kullanici_id INT AUTO_INCREMENT PRIMARY KEY,
+    kullanici_adi VARCHAR(255),
     sifre VARCHAR(255),
-    sicil_no VARCHAR(255),
-    FOREIGN KEY (sicil_no) REFERENCES grup_yoneticisi(sicil_no),
-    FOREIGN KEY (sicil_no) REFERENCES takim_lideri(sicil_no),
-    FOREIGN KEY (sicil_no) REFERENCES musteri_temsilcisi(sicil_no)
+    rol ENUM('musteri_temsilcisi', 'takim_lideri', 'grup_yoneticisi'),
+    temsilci_no INT,
+    takim_lideri_no INT,
+    grup_yoneticisi_no INT,
+    FOREIGN KEY (temsilci_no) REFERENCES musteri_temsilcisi(musteri_temsilcisi_no),
+    FOREIGN KEY (takim_lideri_no) REFERENCES takim_lideri(takim_lideri_no),
+    FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
 );
