@@ -68,9 +68,12 @@ CREATE TABLE kullanicilar (
 
 
 
+USE vtysproje;
+
 DELIMITER //
+
 CREATE PROCEDURE sp_AddGorusme(
-    IN p_sicil_no VARCHAR(255),
+    IN p_musteri_id INT,
     IN p_musteri_ad_soyad VARCHAR(255),
     IN p_gorusme_konusu VARCHAR(50),
     IN p_gorusme_tarihi DATE,
@@ -79,23 +82,8 @@ CREATE PROCEDURE sp_AddGorusme(
     IN p_gorusme_durum VARCHAR(50)
 )
 BEGIN
-    INSERT INTO gorusme (
-        sicil_no,
-        musteri_ad_soyad,
-        gorusme_konusu,
-        gorusme_tarihi,
-        gorusme_baslama_saati,
-        gorusme_bitis_saati,
-        gorusme_durum
-    ) VALUES (
-        p_sicil_no,
-        p_musteri_ad_soyad,
-        p_gorusme_konusu,
-        p_gorusme_tarihi,
-        p_baslama_saati,
-        p_bitis_saati,
-        p_gorusme_durum
-    );
+    INSERT INTO gorusme (musteri_id, musteri_ad_soyad, gorusme_konusu, gorusme_tarihi, gorusme_baslama_saati, gorusme_bitis_saati, gorusme_durum)
+    VALUES (p_musteri_id, p_musteri_ad_soyad, p_gorusme_konusu, p_gorusme_tarihi, p_baslama_saati, p_bitis_saati, p_gorusme_durum);
 END //
 
 DELIMITER ;
