@@ -65,8 +65,8 @@ CREATE TABLE kullanicilar (
     FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
 );
 
-
-
+------------------------------------------------------------------------------------------------------------------------------------
+GÖRÜŞME EKLEYEN STORED PROCEDURE
 
 USE vtysproje;
 
@@ -87,3 +87,43 @@ BEGIN
 END //
 
 DELIMITER ;
+------------------------------------------------------------------------------------------------------------------------------------
+PRİM HESAPLAYAN FONKSYİON
+
+DELIMITER //
+
+CREATE FUNCTION aylik_prim_hesapla(musteri_temsilcisi_id INT, baslangic_tarihi DATE, bitis_tarihi DATE) RETURNS INT
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE daily_calls INT;
+    DECLARE short_calls INT;
+    DECLARE total_prim INT;
+
+    -- Günlük çağrı sayısını hesapla
+    SELECT COUNT(*) INTO daily_calls
+    FROM gorusme
+    WHERE gorusme_tarihi BETWEEN baslangic_tarihi AND bitis_tarihi
+    AND musteri_temsilcisi_no = musteri_temsilcisi_id;
+
+    -- 5 dakikadan daha kısa görüşme sayısını hesapla
+    SELECT COUNT(*) INTO short_calls
+    FROM gorusme
+    WHERE gorusme_tarihi BETWEEN baslangic_tarihi AND bitis_tarihi
+    AND musteri_temsilcisi_no = musteri_temsilcisi_id
+    AND TIME_TO_SEC(TIMEDIFF(gorusme_bitis_saati, gorusme_baslama_saati)) / 60 < 5;
+
+    -- Prim hesaplama
+    IF daily_calls < 100 THEN
+        SET total_prim = 0; -- Prim hak ediş yok
+    ELSEIF daily_calls >= 100 AND daily_calls < 200 THEN
+        SET total_prim = 5000 + (short_calls * 1.25);
+    ELSE
+        SET total_prim = 5000 + (short_calls * 2);
+    END IF;
+
+    RETURN total_prim;
+END //
+
+DELIMITER ;
+
