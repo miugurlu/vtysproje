@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from database import get_database_connection
+from database import get_database_connection, aylik_prim_hesapla
+
 
 def musteri_temsilcisi_ekrani_ac(app, temsilci_no):
     new_window = tk.Toplevel(app)
@@ -10,12 +11,14 @@ def musteri_temsilcisi_ekrani_ac(app, temsilci_no):
     btn_call_list = tk.Button(new_window, text="Müşteri Çağrı Listesi", command=lambda: musteri_cagri_listesi_ac(new_window, temsilci_no))
     btn_call_list.pack(pady=10)
 
-    btn_monthly_bonus_list = tk.Button(new_window, text="Aylık Prim Listesi", command=lambda: aylik_bonus_listesi_ac(new_window, temsilci_no))
+    btn_monthly_bonus_list = tk.Button(new_window, text="Aylık Prim Listesi", command=lambda: aylik_prim_listesi_ac(new_window, temsilci_no))
     btn_monthly_bonus_list.pack(pady=10)
 
     btn_objection_list = tk.Button(new_window, text="İtirazlarım", command=lambda: itiraz_listesi_ac(new_window, temsilci_no))
     btn_objection_list.pack(pady=10)
 
+
+#MÜŞTERİ TEMSİLCİSİ ÇAĞRI LİSTESİ GÖRME VE EKLEME
 def musteri_cagri_listesi_ac(parent_window, temsilci_no):
     if hasattr(parent_window, 'call_list_window') and parent_window.call_list_window.winfo_exists():
         parent_window.call_list_window.lift()
@@ -108,11 +111,32 @@ def yeni_cagri_ekle(parent_window, listbox, temsilci_no):
     btn_save = tk.Button(new_call_window, text="Kaydet", command=save_new_call)
     btn_save.pack(pady=10)
 
-def aylik_bonus_listesi_ac(parent_window, temsilci_no):
+
+
+#MÜŞTERİ TEMSİLCİSİ PRİMLERİNİ GÖRME
+def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
     new_window = tk.Toplevel(parent_window)
     new_window.title("Aylık Prim Listesi")
-    tk.Label(new_window, text=f"Müşteri Temsilcisi {temsilci_no} için Aylık Prim Listesi").pack()
-    # Burada aylık prim listesini görüntülemek için gerekli kodları ekleyin
+
+    primler = {}
+    for ay in range(1, 13):  # 1'den 12'ye kadar olan aylar için
+        baslangic_tarihi = f'2024-{ay:02d}-01'  # Belirli bir yıl ve ay için başlangıç tarihi
+        bitis_tarihi = f'2024-{ay:02d}-28'  # Belirli bir yıl ve ay için bitiş tarihi
+        prim_miktari = aylik_prim_hesapla(musteri_temsilcisi_no, baslangic_tarihi, bitis_tarihi)
+        primler[f"2024-{ay:02d}"] = prim_miktari
+
+    # Aylık primleri tkinter tablosunda göster
+    prim_table = tk.Frame(new_window)
+    prim_table.pack(padx=10, pady=10)
+
+    tk.Label(prim_table, text="Ay").grid(row=0, column=0)
+    tk.Label(prim_table, text="Prim Miktarı").grid(row=0, column=1)
+
+    row = 1
+    for ay, prim in primler.items():
+        tk.Label(prim_table, text=ay).grid(row=row, column=0)
+        tk.Label(prim_table, text=str(prim)).grid(row=row, column=1)
+        row += 1
 
 def itiraz_listesi_ac(parent_window, temsilci_no):
     new_window = tk.Toplevel(parent_window)

@@ -25,3 +25,23 @@ def get_user_role(username, password):
     cursor.close()
     connection.close()
     return result
+
+
+def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
+    db_connection = get_database_connection()
+    if db_connection is None:
+        return 0
+
+    cursor = db_connection.cursor()
+    try:
+        cursor.callproc('calculate_monthly_prim', [musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi])
+        for result in cursor.stored_results():
+            prim_miktari = result.fetchone()[0]
+    except Error as e:
+        print(f"Error executing procedure: {e}")
+        prim_miktari = 0
+    finally:
+        cursor.close()
+        db_connection.close()
+
+    return prim_miktari
