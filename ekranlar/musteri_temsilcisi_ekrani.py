@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from database import get_database_connection, aylik_prim_hesapla
-
+from datetime import datetime
 
 def musteri_temsilcisi_ekrani_ac(app, temsilci_no):
     new_window = tk.Toplevel(app)
@@ -114,16 +114,74 @@ def yeni_cagri_ekle(parent_window, listbox, temsilci_no):
 
 
 #MÜŞTERİ TEMSİLCİSİ PRİMLERİNİ GÖRME
+def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
+    db_connection = get_database_connection()
+    if db_connection is None:
+        return 0
+
+    cursor = db_connection.cursor()
+    try:
+        cursor.execute("SELECT aylik_prim_hesapla(%s, %s, %s)", (musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi))
+        prim_miktari = cursor.fetchone()[0]
+    except Exception as e:
+        print(f"Fonksiyonu çalıştırırken hata! : {e}")
+        prim_miktari = 0
+    finally:
+        cursor.close()
+        db_connection.close()
+
+    return prim_miktari
+
+
+def itiraz_et(musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad):
+    # İtiraz etme işlemi burada yapılacak
+    itiraz_aciklama_penceresi = tk.Toplevel()
+    itiraz_aciklama_penceresi.title("İtiraz Açıklaması")
+
+    tk.Label(itiraz_aciklama_penceresi, text="İtiraz Açıklaması:").pack(pady=10)
+    itiraz_aciklama_entry = tk.Entry(itiraz_aciklama_penceresi, width=50)
+    itiraz_aciklama_entry.pack(pady=10)
+
+    def itiraz_gonder():
+        aciklama = itiraz_aciklama_entry.get()
+        if aciklama:
+            # İtiraz kaydını veri tabanına ekle
+            db_connection = get_database_connection()
+            if db_connection is not None:
+                cursor = db_connection.cursor()
+                try:
+                    cursor.callproc("sp_ItirazOlustur", (
+                    musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad, aciklama, datetime.now().date()))
+                    db_connection.commit()
+                except Exception as e:
+                    print(f"İtiraz kaydedilirken hata oluştu: {e}")
+                finally:
+                    cursor.close()
+                    db_connection.close()
+            itiraz_aciklama_penceresi.destroy()
+
+    tk.Button(itiraz_aciklama_penceresi, text="Gönder", command=itiraz_gonder).pack(pady=10)
+
+
 def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
     new_window = tk.Toplevel(parent_window)
     new_window.title("Aylık Prim Listesi")
 
     primler = {}
-    for ay in range(1, 13):  # 1'den 12'ye kadar olan aylar için
-        baslangic_tarihi = f'2024-{ay:02d}-01'  # Belirli bir yıl ve ay için başlangıç tarihi
-        bitis_tarihi = f'2024-{ay:02d}-28'  # Belirli bir yıl ve ay için bitiş tarihi
+    now = datetime.now()
+    current_month = now.month
+    current_year = now.year
+
+    for i in range(12):
+        ay = current_month - i
+        yil = current_year
+        if ay <= 0:
+            ay += 12
+            yil -= 1
+        baslangic_tarihi = f'{yil}-{ay:02d}-01'
+        bitis_tarihi = f'{yil}-{ay:02d}-28'
         prim_miktari = aylik_prim_hesapla(musteri_temsilcisi_no, baslangic_tarihi, bitis_tarihi)
-        primler[f"2024-{ay:02d}"] = prim_miktari
+        primler[f"{yil}-{ay:02d}"] = prim_miktari
 
     # Aylık primleri tkinter tablosunda göster
     prim_table = tk.Frame(new_window)
@@ -136,7 +194,12 @@ def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
     for ay, prim in primler.items():
         tk.Label(prim_table, text=ay).grid(row=row, column=0)
         tk.Label(prim_table, text=str(prim)).grid(row=row, column=1)
+        if row == 1:
+            tk.Button(prim_table, text="İtiraz Et",
+                      command=lambda a=ay: itiraz_et(musteri_temsilcisi_no, a)).grid(
+                row=row, column=2)
         row += 1
+
 
 def itiraz_listesi_ac(parent_window, temsilci_no):
     new_window = tk.Toplevel(parent_window)

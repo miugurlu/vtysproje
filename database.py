@@ -34,14 +34,15 @@ def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
 
     cursor = db_connection.cursor()
     try:
-        cursor.callproc('calculate_monthly_prim', [musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi])
-        for result in cursor.stored_results():
-            prim_miktari = result.fetchone()[0]
+        cursor.execute("SELECT aylik_prim_hesapla(%s, %s, %s)",
+                       (musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi))
+        prim_miktari = cursor.fetchone()[0]
     except Error as e:
-        print(f"Error executing procedure: {e}")
+        print(f"Fonksiyonu çalıştırırken hata! : {e}")
         prim_miktari = 0
     finally:
         cursor.close()
         db_connection.close()
 
     return prim_miktari
+
