@@ -151,3 +151,15 @@ BEGIN
 END //
 
 DELIMITER ;
+
+------------------------------------------------------------------------------------------------------------------------------------
+#İTİRAZLARI EKRANA GETİREN VIEW#
+
+CREATE VIEW itirazlar_view AS
+SELECT 
+    musteri_temsilcisi_no,
+    itiraz_aciklamasi,
+    itiraz_cevabi,
+    itiraz_durumu
+FROM itirazlar;
+
