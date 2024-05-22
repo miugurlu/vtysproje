@@ -66,7 +66,7 @@ CREATE TABLE kullanicilar (
 );
 
 ------------------------------------------------------------------------------------------------------------------------------------
-GÖRÜŞME EKLEYEN STORED PROCEDURE
+#GÖRÜŞME EKLEYEN STORED PROCEDURE#
 
 USE vtysproje;
 
@@ -88,7 +88,7 @@ END //
 
 DELIMITER ;
 ------------------------------------------------------------------------------------------------------------------------------------
-PRİM HESAPLAYAN FONKSYİON
+#PRİM HESAPLAYAN FONKSYİON#
 
 DELIMITER //
 
@@ -127,3 +127,21 @@ END //
 
 DELIMITER ;
 
+------------------------------------------------------------------------------------------------------------------------------------
+#İTİRAZ OLUŞTURAN STORED PROCEDURE#
+
+DELIMITER //
+
+CREATE PROCEDURE sp_ItirazOlustur(
+    IN p_temsilci_no INT,
+    IN p_temsilci_ad_soyad VARCHAR(255),
+    IN p_itiraz_aciklamasi VARCHAR(255),
+    IN p_itiraz_tarihi DATE
+)
+BEGIN
+    INSERT INTO itirazlar (musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad, itiraz_aciklamasi, itiraz_tarihi)
+    VALUES (p_temsilci_no, p_temsilci_ad_soyad, p_itiraz_aciklamasi, p_itiraz_tarihi);
+    
+END //
+
+DELIMITER ;
