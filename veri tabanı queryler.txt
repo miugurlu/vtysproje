@@ -26,8 +26,8 @@ CREATE TABLE gorusme (
 
 CREATE TABLE itirazlar (
     itiraz_no INT AUTO_INCREMENT PRIMARY KEY,
-    temsilci_no INT,
-    temsilci_ad_soyad VARCHAR(255),
+    musteri_temsilcisi_no INT,
+    musteri_temsilcisi_ad_soyad VARCHAR(255),
     itiraz_aciklamasi VARCHAR(255),
     itiraz_tarihi DATE
 );
