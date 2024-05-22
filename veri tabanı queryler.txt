@@ -65,6 +65,11 @@ CREATE TABLE kullanicilar (
     FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
 );
 
+CREATE TABLE mailler (
+    mail VARCHAR(255) PRIMARY KEY,
+    grup_yoneticisi_no INT,
+    FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
+);
 ------------------------------------------------------------------------------------------------------------------------------------
 #GÖRÜŞME EKLEYEN STORED PROCEDURE#
 
