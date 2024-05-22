@@ -30,6 +30,8 @@ CREATE TABLE itirazlar (
     musteri_temsilcisi_ad_soyad VARCHAR(255),
     itiraz_aciklamasi VARCHAR(255),
     itiraz_tarihi DATE
+    itiraz_cevabi VARCHAR(255),
+    itiraz_durumu ENUM('bekliyor', 'onaylandi', 'reddedildi')
 );
 
 CREATE TABLE primler (
@@ -65,8 +67,13 @@ CREATE TABLE kullanicilar (
     FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
 );
 
+CREATE TABLE mailler (
+    mail VARCHAR(255) PRIMARY KEY,
+    grup_yoneticisi_no INT,
+    FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
+);
 ------------------------------------------------------------------------------------------------------------------------------------
-GÖRÜŞME EKLEYEN STORED PROCEDURE
+#GÖRÜŞME EKLEYEN STORED PROCEDURE#
 
 USE vtysproje;
 
@@ -88,7 +95,7 @@ END //
 
 DELIMITER ;
 ------------------------------------------------------------------------------------------------------------------------------------
-PRİM HESAPLAYAN FONKSYİON
+#PRİM HESAPLAYAN FONKSYİON#
 
 DELIMITER //
 
@@ -126,4 +133,33 @@ BEGIN
 END //
 
 DELIMITER ;
+
+------------------------------------------------------------------------------------------------------------------------------------
+#İTİRAZ OLUŞTURAN STORED PROCEDURE#
+
+DELIMITER //
+
+CREATE PROCEDURE sp_ItirazOlustur(
+    IN p_temsilci_no INT,
+    IN p_itiraz_aciklamasi VARCHAR(255),
+    IN p_itiraz_tarihi DATE
+)
+BEGIN
+    INSERT INTO itirazlar (musteri_temsilcisi_no, itiraz_aciklamasi, itiraz_tarihi)
+    VALUES (p_temsilci_no, p_itiraz_aciklamasi, p_itiraz_tarihi);
+    
+END //
+
+DELIMITER ;
+
+------------------------------------------------------------------------------------------------------------------------------------
+#İTİRAZLARI EKRANA GETİREN VIEW#
+
+CREATE VIEW itirazlar_view AS
+SELECT 
+    musteri_temsilcisi_no,
+    itiraz_aciklamasi,
+    itiraz_cevabi,
+    itiraz_durumu
+FROM itirazlar;
 
