@@ -133,7 +133,7 @@ def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
     return prim_miktari
 
 
-def itiraz_et(musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad):
+def itiraz_et(musteri_temsilcisi_no):
     # İtiraz etme işlemi burada yapılacak
     itiraz_aciklama_penceresi = tk.Toplevel()
     itiraz_aciklama_penceresi.title("İtiraz Açıklaması")
@@ -150,8 +150,7 @@ def itiraz_et(musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad):
             if db_connection is not None:
                 cursor = db_connection.cursor()
                 try:
-                    cursor.callproc("sp_ItirazOlustur", (
-                    musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad, aciklama, datetime.now().date()))
+                    cursor.callproc("sp_ItirazOlustur", (musteri_temsilcisi_no, aciklama, datetime.now().date()))
                     db_connection.commit()
                 except Exception as e:
                     print(f"İtiraz kaydedilirken hata oluştu: {e}")
@@ -163,7 +162,7 @@ def itiraz_et(musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad):
     tk.Button(itiraz_aciklama_penceresi, text="Gönder", command=itiraz_gonder).pack(pady=10)
 
 
-def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
+def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad=None):
     new_window = tk.Toplevel(parent_window)
     new_window.title("Aylık Prim Listesi")
 
@@ -196,13 +195,48 @@ def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
         tk.Label(prim_table, text=str(prim)).grid(row=row, column=1)
         if row == 1:
             tk.Button(prim_table, text="İtiraz Et",
-                      command=lambda a=ay: itiraz_et(musteri_temsilcisi_no, a)).grid(
+                      command=lambda: itiraz_et(musteri_temsilcisi_no)).grid(
                 row=row, column=2)
         row += 1
 
 
+
+#İTİRAZ LİSTESİNİ GÖRME
 def itiraz_listesi_ac(parent_window, temsilci_no):
     new_window = tk.Toplevel(parent_window)
     new_window.title("İtirazlarım")
+
+    # Başlık etiketi
     tk.Label(new_window, text=f"Müşteri Temsilcisi {temsilci_no} için İtiraz Listesi").pack()
-    # Burada itiraz listesini görüntülemek için gerekli kodları ekleyin
+
+    # Görünümün sorgulanması
+    db_connection = get_database_connection()
+    if db_connection is not None:
+        cursor = db_connection.cursor()
+        try:
+            # itirazlar_view görünümünden verileri al
+            cursor.execute("SELECT itiraz_aciklamasi, itiraz_cevabi, itiraz_durumu FROM itirazlar_view WHERE musteri_temsilcisi_no = %s", (temsilci_no,))
+            itirazlar = cursor.fetchall()
+
+            # Tablo oluşturma
+            itiraz_table = tk.Frame(new_window)
+            itiraz_table.pack(padx=20, pady=20)
+
+            # Başlık satırı
+            tk.Label(itiraz_table, text="İtiraz Açıklaması").grid(row=0, column=0, padx=10, pady=10)
+            tk.Label(itiraz_table, text="İtiraz Cevabı").grid(row=0, column=1, padx=10, pady=10)
+            tk.Label(itiraz_table, text="İtiraz Durumu").grid(row=0, column=2, padx=10, pady=10)
+
+            # Veri satırları
+            for i, itiraz in enumerate(itirazlar, start=1):
+                tk.Label(itiraz_table, text=itiraz[0]).grid(row=i, column=0, padx=10, pady=10)
+                tk.Label(itiraz_table, text=itiraz[1]).grid(row=i, column=1, padx=10, pady=10)
+                tk.Label(itiraz_table, text=itiraz[2]).grid(row=i, column=2, padx=10, pady=10)
+
+        except Exception as e:
+            print(f"İtiraz listesi alınırken hata oluştu: {e}")
+        finally:
+            cursor.close()
+            db_connection.close()
+    else:
+        print("Veritabanı bağlantısı sağlanamadı.")
