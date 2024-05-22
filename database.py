@@ -6,7 +6,7 @@ def get_database_connection():
         connection = mysql.connector.connect(
             host="localhost",
             user="root",
-            password="Ibrahim482",
+            password="password",
             database="vtysproje"
         )
         return connection
@@ -20,7 +20,7 @@ def get_user_role(username, password):
         return None
 
     cursor = connection.cursor()
-    cursor.execute("SELECT rol, musteri_temsilcisi_no, takim_lideri_no, grup_yoneticisi_no FROM kullanicilar WHERE kullanici_adi=%s AND sifre=%s", (username, password))
+    cursor.execute("SELECT rol, temsilci_no, takim_lideri_no, grup_yoneticisi_no FROM kullanicilar WHERE kullanici_adi=%s AND sifre=%s", (username, password))
     result = cursor.fetchone()
     cursor.close()
     connection.close()
@@ -45,3 +45,22 @@ def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
         db_connection.close()
 
     return prim_miktari
+
+
+def register_new_employee(username, password, role, temsilci_no=None, takim_lideri_no=None, grup_yoneticisi_no=None):
+    connection = get_database_connection()
+    if connection is None:
+        return False
+
+    cursor = connection.cursor()
+    try:
+        cursor.execute("INSERT INTO kullanicilar (kullanici_adi, sifre, rol, temsilci_no, takim_lideri_no, grup_yoneticisi_no) VALUES (%s, %s, %s, %s, %s, %s)",
+                       (username, password, role, temsilci_no, takim_lideri_no, grup_yoneticisi_no))
+        connection.commit()
+        return True
+    except Error as e:
+        print(f"Error adding user: {e}")
+        return False
+    finally:
+        cursor.close()
+        connection.close()

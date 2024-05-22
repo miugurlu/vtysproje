@@ -1,10 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
 from database import get_user_role
-from ekranlar.musteri_temsilcisi_ekrani import musteri_temsilcisi_ekrani_ac
-from ekranlar.takim_lideri_ekrani import takim_lideri_ekrani_ac
-from ekranlar.grup_lideri_ekrani import grup_yoneticisi_ekrani_ac
-
+from musteri_temsilcisi_ekrani import musteri_temsilcisi_ekrani_ac
+from takim_lideri_ekrani import takim_lideri_ekrani_ac
+from grup_lideri_ekrani import grup_yoneticisi_ekrani_ac
 
 def create_login_screen(app):
     def login():
@@ -15,12 +14,19 @@ def create_login_screen(app):
             messagebox.showerror("HATA", "Kullanıcı adı ve şifre gerekli")
             return
 
-        result = get_user_role(username, password)
+        try:
+            result = get_user_role(username, password)
+        except Exception as e:
+            messagebox.showerror("HATA", f"Veritabanı hatası: {e}")
+            return
 
         if result:
-            role, temsilci_no, takim_lideri_no, grup_yoneticisi_no = result
+            role, user_id, takim_lideri_no, grup_yoneticisi_no = result
+            entry_username.delete(0, tk.END)
+            entry_password.delete(0, tk.END)
+            login_frame.pack_forget()  # Giriş ekranını gizle
             if role == 'musteri_temsilcisi':
-                musteri_temsilcisi_ekrani_ac(app, temsilci_no)
+                musteri_temsilcisi_ekrani_ac(app, user_id)
             elif role == 'takim_lideri':
                 takim_lideri_ekrani_ac(app, takim_lideri_no)
             elif role == 'grup_yoneticisi':
