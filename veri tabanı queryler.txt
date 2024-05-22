@@ -30,6 +30,8 @@ CREATE TABLE itirazlar (
     musteri_temsilcisi_ad_soyad VARCHAR(255),
     itiraz_aciklamasi VARCHAR(255),
     itiraz_tarihi DATE
+    itiraz_cevabi VARCHAR(255),
+    itiraz_durumu ENUM('bekliyor', 'onaylandi', 'reddedildi')
 );
 
 CREATE TABLE primler (
