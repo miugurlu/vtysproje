@@ -197,4 +197,15 @@ BEGIN
     WHERE itiraz_no = p_itiraz_no;
 END
 ------------------------------------------------------------------------------------------------------------------------------------
+#GÖRÜŞME DETAYLARINI GÖSTEREN VIEW#
 
+CREATE VIEW vw_gorusme_detaylari AS
+SELECT       
+    musteri_ad_soyad,
+    gorusme_konusu,
+    gorusme_tarihi,
+    gorusme_baslama_saati,
+    gorusme_bitis_saati,
+    gorusme_durum
+FROM 
+    gorusme;
