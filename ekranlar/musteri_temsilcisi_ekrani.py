@@ -128,7 +128,7 @@ def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
         cursor.execute("SELECT aylik_prim_hesapla(%s, %s, %s)", (musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi))
         prim_miktari = cursor.fetchone()[0]
     except Exception as e:
-        print(f"Fonksiyonu çalıştırırken hata! : {e}")
+        print(f"Fonksiyonu çalıştırırken hata : {e}")
         prim_miktari = 0
     finally:
         cursor.close()
