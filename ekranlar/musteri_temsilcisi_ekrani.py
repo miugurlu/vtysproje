@@ -38,17 +38,21 @@ def musteri_cagri_listesi_ac(parent_window, temsilci_no):
 
     load_calls(call_listbox, temsilci_no)
 
-def load_calls(listbox, temsilci_no):
+def load_calls(listbox, musteri_id):
     listbox.delete(0, tk.END)
     connection = get_database_connection()
     if connection:
         cursor = connection.cursor()
         cursor.execute(
-            "SELECT musteri_ad_soyad, gorusme_konusu, gorusme_tarihi, gorusme_baslama_saati, gorusme_bitis_saati, gorusme_durum FROM gorusme WHERE musteri_id=%s", (temsilci_no,))
+            "SELECT musteri_ad_soyad, gorusme_konusu, gorusme_tarihi, gorusme_baslama_saati, gorusme_bitis_saati, gorusme_durum "
+            "FROM vw_gorusme_detaylari WHERE musteri_id=%s",
+            (musteri_id,)
+        )
         for row in cursor.fetchall():
             listbox.insert(tk.END, f"{row[0]} - {row[1]} - {row[2]} - {row[3]} - {row[4]} - {row[5]}")
         cursor.close()
         connection.close()
+
 
 def yeni_cagri_ekle(parent_window, listbox, temsilci_no):
     new_call_window = tk.Toplevel(parent_window)
@@ -215,7 +219,7 @@ def itiraz_listesi_ac(parent_window, temsilci_no):
         cursor = db_connection.cursor()
         try:
             # itirazlar_view görünümünden verileri al
-            cursor.execute("SELECT itiraz_aciklamasi, itiraz_cevabi, itiraz_durumu FROM itirazlar_view WHERE musteri_temsilcisi_no = %s", (temsilci_no,))
+            cursor.execute("SELECT itiraz_aciklamasi, itiraz_cevabi, itiraz_durumu FROM vw_itirazlar WHERE musteri_temsilcisi_no = %s", (temsilci_no,))
             itirazlar = cursor.fetchall()
 
             # Tablo oluşturma
