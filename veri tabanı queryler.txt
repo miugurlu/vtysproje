@@ -200,7 +200,8 @@ END
 #GÖRÜŞME DETAYLARINI GÖSTEREN VIEW#
 
 CREATE VIEW vw_gorusme_detaylari AS
-SELECT       
+SELECT 
+    musteri_id,
     musteri_ad_soyad,
     gorusme_konusu,
     gorusme_tarihi,
@@ -209,3 +210,5 @@ SELECT
     gorusme_durum
 FROM 
     gorusme;
+
+
