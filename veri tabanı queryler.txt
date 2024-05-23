@@ -29,9 +29,9 @@ CREATE TABLE itirazlar (
     musteri_temsilcisi_no INT,
     musteri_temsilcisi_ad_soyad VARCHAR(255),
     itiraz_aciklamasi VARCHAR(255),
-    itiraz_tarihi DATE
+    itiraz_tarihi DATE,
     itiraz_cevabi VARCHAR(255),
-    itiraz_durumu ENUM('bekliyor', 'onaylandi', 'reddedildi')
+    itiraz_durumu ENUM('Bekliyor', 'Onaylandi', 'Reddedildi')
 );
 
 CREATE TABLE primler (
@@ -46,7 +46,7 @@ CREATE TABLE musteri_temsilcisi (
     gorusme_no INT,
     itiraz_no INT,
     prim_no INT,
-    sicil_no VARCHAR(255),
+    sicil_no INT,
     takim_lideri_no INT,
     FOREIGN KEY (gorusme_no) REFERENCES gorusme(gorusme_no),
     FOREIGN KEY (itiraz_no) REFERENCES itirazlar(itiraz_no),
@@ -79,7 +79,7 @@ USE vtysproje;
 
 DELIMITER //
 
-CREATE PROCEDURE sp_AddGorusme(
+CREATE PROCEDURE spGorusmeEkle(
     IN p_musteri_id INT,
     IN p_musteri_ad_soyad VARCHAR(255),
     IN p_gorusme_konusu VARCHAR(50),
@@ -139,7 +139,7 @@ DELIMITER ;
 
 DELIMITER //
 
-CREATE PROCEDURE sp_ItirazOlustur(
+CREATE PROCEDURE spItirazOlustur(
     IN p_temsilci_no INT,
     IN p_itiraz_aciklamasi VARCHAR(255),
     IN p_itiraz_tarihi DATE
@@ -153,7 +153,7 @@ END //
 DELIMITER ;
 
 ------------------------------------------------------------------------------------------------------------------------------------
-#İTİRAZLARI EKRANA GETİREN VIEW#
+#İTİRAZLARI MÜŞTERİ TEMSİLCİSİNİN EKRANINA GETİREN VIEW#
 
 CREATE VIEW itirazlar_view AS
 SELECT 
@@ -162,4 +162,43 @@ SELECT
     itiraz_cevabi,
     itiraz_durumu
 FROM itirazlar;
+
+------------------------------------------------------------------------------------------------------------------------------------
+#İTİRAZLARI TAKIM LİDERİNİN EKRANINA GETİREN VIEW#
+
+CREATE VIEW takim_lideri_itirazlar AS
+SELECT
+    mt.sicil_no AS asistan_sicil_no,
+    mt.musteri_temsilcisi_ad_soyad AS asistan_ad_soyad,
+    i.itiraz_aciklamasi,
+    DATE_FORMAT(i.itiraz_tarihi, '%Y-%m') AS itiraz_ay
+FROM
+    itirazlar i
+JOIN
+    musteri_temsilcisi mt ON i.musteri_temsilcisi_no = mt.musteri_temsilcisi_no;
+------------------------------------------------------------------------------------------------------------------------------------
+#TAKIM LİDERİ İÇİN İTİRAZLARI GETİREN STORED PROCEDURE#
+
+DELIMITER //
+
+CREATE PROCEDURE spTakimLideriItirazlariGetir(IN p_takim_lideri_no INT)
+BEGIN
+    SELECT
+        i.itiraz_no,
+        mt.sicil_no AS asistan_sicil_no,
+        mt.musteri_temsilcisi_ad_soyad AS asistan_ad_soyad,
+        i.itiraz_aciklamasi,
+        DATE_FORMAT(i.itiraz_tarihi, '%Y-%m') AS itiraz_ay,
+        i.itiraz_cevabi,
+        i.itiraz_durumu
+    FROM
+        itirazlar i
+    JOIN
+        musteri_temsilcisi mt ON i.musteri_temsilcisi_no = mt.musteri_temsilcisi_no
+    WHERE
+        mt.takim_lideri_no = p_takim_lideri_no;
+END //
+
+DELIMITER ;
+------------------------------------------------------------------------------------------------------------------------------------
 
