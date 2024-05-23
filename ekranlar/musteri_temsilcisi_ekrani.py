@@ -70,7 +70,7 @@ def yeni_cagri_ekle(parent_window, listbox, temsilci_no):
         if connection:
             cursor = connection.cursor()
             try:
-                cursor.callproc('sp_AddGorusme', [temsilci_no, musteri_ad_soyad, gorusme_konusu, gorusme_tarihi, gorusme_baslama_saati, gorusme_bitis_saati, gorusme_durum])
+                cursor.callproc('spGorusmeEkle', [temsilci_no, musteri_ad_soyad, gorusme_konusu, gorusme_tarihi, gorusme_baslama_saati, gorusme_bitis_saati, gorusme_durum])
                 connection.commit()
                 listbox.insert(0, f"{musteri_ad_soyad} - {gorusme_konusu} - {gorusme_tarihi} - {gorusme_baslama_saati} - {gorusme_bitis_saati} - {gorusme_durum}")
                 new_call_window.destroy()
@@ -150,7 +150,7 @@ def itiraz_et(musteri_temsilcisi_no):
             if db_connection is not None:
                 cursor = db_connection.cursor()
                 try:
-                    cursor.callproc("sp_ItirazOlustur", (musteri_temsilcisi_no, aciklama, datetime.now().date()))
+                    cursor.callproc("spItirazOlustur", (musteri_temsilcisi_no, aciklama, datetime.now().date()))
                     db_connection.commit()
                 except Exception as e:
                     print(f"İtiraz kaydedilirken hata oluştu: {e}")
@@ -162,7 +162,7 @@ def itiraz_et(musteri_temsilcisi_no):
     tk.Button(itiraz_aciklama_penceresi, text="Gönder", command=itiraz_gonder).pack(pady=10)
 
 
-def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no, musteri_temsilcisi_ad_soyad=None):
+def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
     new_window = tk.Toplevel(parent_window)
     new_window.title("Aylık Prim Listesi")
 
