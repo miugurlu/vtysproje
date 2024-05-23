@@ -164,19 +164,6 @@ SELECT
 FROM itirazlar;
 
 ------------------------------------------------------------------------------------------------------------------------------------
-#İTİRAZLARI TAKIM LİDERİNİN EKRANINA GETİREN VIEW#
-
-CREATE VIEW takim_lideri_itirazlar AS
-SELECT
-    mt.sicil_no AS asistan_sicil_no,
-    mt.musteri_temsilcisi_ad_soyad AS asistan_ad_soyad,
-    i.itiraz_aciklamasi,
-    DATE_FORMAT(i.itiraz_tarihi, '%Y-%m') AS itiraz_ay
-FROM
-    itirazlar i
-JOIN
-    musteri_temsilcisi mt ON i.musteri_temsilcisi_no = mt.musteri_temsilcisi_no;
-------------------------------------------------------------------------------------------------------------------------------------
 #TAKIM LİDERİ İÇİN İTİRAZLARI GETİREN STORED PROCEDURE#
 
 DELIMITER //
