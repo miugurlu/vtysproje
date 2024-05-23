@@ -188,4 +188,13 @@ END //
 
 DELIMITER ;
 ------------------------------------------------------------------------------------------------------------------------------------
+#TAKIM LİDERİ İTİRAZLARI CEVAPLAMASINI SAĞLAYAN STORED PROCEDURE#
+
+CREATE PROCEDURE spItirazCevapla(IN p_itiraz_no INT, IN p_cevap_aciklamasi VARCHAR(255), IN p_itiraz_durumu ENUM('Bekliyor','Onaylandi','Reddedildi'))
+BEGIN
+    UPDATE itirazlar 
+    SET itiraz_cevabi = p_cevap_aciklamasi, itiraz_durumu = p_itiraz_durumu
+    WHERE itiraz_no = p_itiraz_no;
+END
+------------------------------------------------------------------------------------------------------------------------------------
 
