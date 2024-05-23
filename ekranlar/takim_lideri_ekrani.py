@@ -38,10 +38,13 @@ def takim_lideri_ekrani_ac(app, takim_lideri_no):
                 tk.Label(itiraz_table, text=itiraz[2]).grid(row=i, column=2, padx=10, pady=10)  # Asistan Ad Soyad
                 tk.Label(itiraz_table, text=itiraz[3]).grid(row=i, column=3, padx=10, pady=10)  # İtiraz Açıklaması
                 tk.Label(itiraz_table, text=itiraz[4]).grid(row=i, column=4, padx=10, pady=10)  # İtiraz Ayı
-                tk.Label(itiraz_table, text=itiraz[5] if itiraz[5] else "bekliyor").grid(row=i, column=5, padx=10, pady=10)  # İtiraz Durumu
-                if itiraz[5] is None or itiraz[5] == "bekliyor":
+                itiraz_durumu = itiraz[5] if itiraz[5] else "bekliyor"
+                tk.Label(itiraz_table, text=itiraz_durumu).grid(row=i, column=5, padx=10, pady=10)  # İtiraz Durumu
+
+                # İtiraz durumu "bekliyor" olan itirazlar için buton oluştur
+                if itiraz_durumu == "Bekliyor":
                     tk.Button(itiraz_table, text="İtiraz Cevapla",
-                              command=lambda itiraz_no=itiraz[0]: itiraz_cevapla_penceresi_ac(itiraz_no, new_window, takim_lideri_no)).grid(row=i,column=6,padx=10,pady=10)
+                              command=lambda itiraz_no=itiraz[0]: itiraz_cevapla_penceresi_ac(itiraz_no, new_window, takim_lideri_no)).grid(row=i, column=6, padx=10, pady=10)
 
         except Exception as e:
             print(f"İtiraz listesi alınırken hata oluştu: {e}")
@@ -50,7 +53,6 @@ def takim_lideri_ekrani_ac(app, takim_lideri_no):
             db_connection.close()
     else:
         print("Veritabanı bağlantısı sağlanamadı.")
-
 
 def itiraz_cevapla_penceresi_ac(itiraz_no, parent_window, takim_lideri_no):
     def cevap_gonder():
@@ -68,8 +70,9 @@ def itiraz_cevapla_penceresi_ac(itiraz_no, parent_window, takim_lideri_no):
         if db_connection is not None:
             cursor = db_connection.cursor()
             try:
-                # Stored procedure'u çağır
-                cursor.callproc('spItirazCevapla', (itiraz_no, cevap_aciklamasi, itiraz_durumu))
+                # SQL sorgusu ile itiraz cevabını güncelle
+                query = "UPDATE itirazlar SET itiraz_cevabi=%s, itiraz_durumu=%s WHERE itiraz_no=%s"
+                cursor.execute(query, (cevap_aciklamasi, itiraz_durumu, itiraz_no))
                 db_connection.commit()
                 print("İtiraz cevabı ve durumu güncellendi.")
             except Exception as e:
@@ -78,6 +81,8 @@ def itiraz_cevapla_penceresi_ac(itiraz_no, parent_window, takim_lideri_no):
                 cursor.close()
                 db_connection.close()
                 parent_window.destroy()
+                # Takım lideri ekranını yenile
+                takim_lideri_ekrani_ac(parent_window.master, takim_lideri_no)
 
     # İtiraz cevapla penceresi oluşturulması
     cevap_penceresi = tk.Toplevel(parent_window)
