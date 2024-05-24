@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
-from database import get_database_connection, aylik_prim_hesapla
+from database import get_database_connection, aylik_prim_hesapla,prim_ekle
 from datetime import datetime
 
 def musteri_temsilcisi_ekrani_ac(app, temsilci_no):
@@ -182,8 +182,7 @@ def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
                       command=lambda: itiraz_et(musteri_temsilcisi_no)).grid(
                 row=row, column=2)
         row += 1
-
-
+    prim_ekle(primler,musteri_temsilcisi_no)
 
 #İTİRAZ LİSTESİNİ GÖRME
 def itiraz_listesi_ac(parent_window, temsilci_no):
