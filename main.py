@@ -3,6 +3,7 @@ from login import create_login_screen
 
 
 def main():
+
     app = tk.Tk()
     app.title("Giriş Ekranı")
     app.attributes('-fullscreen', True)
