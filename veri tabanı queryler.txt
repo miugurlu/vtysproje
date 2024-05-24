@@ -2,7 +2,8 @@ USE vtysproje;
 CREATE TABLE grup_yoneticisi (
     grup_yoneticisi_no INT AUTO_INCREMENT PRIMARY KEY,
     grup_yoneticisi_ad_soyad VARCHAR(255),
-    sicil_no VARCHAR(255)
+    sicil_no VARCHAR(255),
+    mail_adresi VARCHAR(255)
 );
 
 CREATE TABLE takim_lideri (
@@ -36,8 +37,10 @@ CREATE TABLE itirazlar (
 
 CREATE TABLE primler (
     prim_no INT AUTO_INCREMENT PRIMARY KEY,
+    musteri_temsilcisi_no INT ,
     prim_miktari INT,
-    prim_tarihi DATE
+    prim_tarihi DATE,
+    FOREIGN KEY (musteri_temsilci_no) REFERENCES musteri_temsilcisi(musteri_temsilcisi_no),
 );
 
 CREATE TABLE musteri_temsilcisi (
@@ -45,12 +48,10 @@ CREATE TABLE musteri_temsilcisi (
     musteri_temsilcisi_ad_soyad VARCHAR(255),
     gorusme_no INT,
     itiraz_no INT,
-    prim_no INT,
     sicil_no INT,
     takim_lideri_no INT,
     FOREIGN KEY (gorusme_no) REFERENCES gorusme(gorusme_no),
     FOREIGN KEY (itiraz_no) REFERENCES itirazlar(itiraz_no),
-    FOREIGN KEY (prim_no) REFERENCES primler(prim_no),
     FOREIGN KEY (takim_lideri_no) REFERENCES takim_lideri(takim_lideri_no)
 );
 
@@ -67,11 +68,6 @@ CREATE TABLE kullanicilar (
     FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
 );
 
-CREATE TABLE mailler (
-    mail VARCHAR(255) PRIMARY KEY,
-    grup_yoneticisi_no INT,
-    FOREIGN KEY (grup_yoneticisi_no) REFERENCES grup_yoneticisi(grup_yoneticisi_no)
-);
 ------------------------------------------------------------------------------------------------------------------------------------
 #GÖRÜŞME EKLEYEN STORED PROCEDURE#
 
@@ -210,5 +206,118 @@ SELECT
     gorusme_durum
 FROM 
     gorusme;
+------------------------------------------------------------------------------------------------------------------------------------
+#GUNLUK PRIMI KONTROL EDEN VE HESAPLAYAN STORED PROCEDURE#
+DELIMITER //
+
+CREATE FUNCTION gunlukPrimHesapla(musteri_temsilcisi_no INT, tarih DATE) RETURNS DECIMAL(10,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE gunluk_aramalar INT;
+    DECLARE kisa_aramalar INT;
+    DECLARE prim DECIMAL(10,2);
+    
+    -- Günlük çağrı sayısını hesapla
+    SELECT COUNT(*) INTO gunluk_aramalar
+    FROM gorusme
+    WHERE DATE(gorusme_tarihi) = tarih
+    AND musteri_temsilcisi_no = musteri_temsilcisi_no;
+    
+    -- Görüşme süresi 5 dakikadan kısa olan çağrı sayısını hesapla
+    SELECT COUNT(*) INTO kisa_aramalar
+    FROM gorusme
+    WHERE DATE(gorusme_tarihi) = tarih
+    AND musteri_temsilcisi_no = musteri_temsilcisi_no
+    AND TIME_TO_SEC(gorusme_bitis_saati) - TIME_TO_SEC(gorusme_baslama_saati) <= 300;
+    
+    -- Prim hesabını yap
+    IF gunluk_aramalar < 100 THEN
+        SET prim = 0;
+    ELSEIF gunluk_aramalar >= 100 AND gunluk_aramalar < 200 THEN
+        SET prim = (gunluk_aramalar * 1.25);
+    ELSE
+        SET prim = (gunluk_aramalar * 2);
+    END IF;
+    
+    RETURN prim;
+END //
+
+DELIMITER ;
+
+------------------------------------------------------------------------------------------------------------------------------------
+#AYLIK PRİMİ HESAPLAYAN STORED PROCEDURE#
 
 
+DELIMITER //
+
+CREATE FUNCTION aylikPrimHesapla(musteri_temsilcisi_no INT, ay INT, yil INT) RETURNS DECIMAL(10,2)
+DETERMINISTIC
+READS SQL DATA
+BEGIN
+    DECLARE total_prim DECIMAL(10,2);
+    DECLARE tarih DATE;
+    DECLARE gunluk_prim DECIMAL(10,2);
+    
+    SET tarih = STR_TO_DATE(CONCAT(yil, '-', ay, '-', '01'), '%Y-%m-%d');
+    SET total_prim = 5000;
+    
+    WHILE MONTH(tarih) = ay DO
+        SET gunluk_prim = gunlukPrimHesapla(musteri_temsilcisi_no, tarih);
+        SET total_prim = total_prim + gunluk_prim;
+        SET tarih = DATE_ADD(tarih, INTERVAL 1 DAY);
+    END WHILE;
+    
+    RETURN total_prim;
+END //
+
+DELIMITER ;
+------------------------------------------------------------------------------------------------------------------------------------
+#MÜŞTERİ TEMSİLCİSİNİ KAYDEDEN TRIGGER#
+
+DELIMITER //
+
+CREATE TRIGGER trg_insert_musteri_temsilcisi
+AFTER INSERT ON kullanicilar
+FOR EACH ROW
+BEGIN
+    IF NEW.rol = 'musteri_temsilcisi' THEN
+        INSERT INTO musteri_temsilcisi (musteri_temsilcisi_ad_soyad, sicil_no, takim_lideri_no)
+        VALUES (NEW.kullanici_adi, '2024', 1);
+    END IF;
+END;
+
+DELIMITER;
+------------------------------------------------------------------------------------------------------------------------------------
+#TAKIM LİDERİNİ KAYDEDEN TRIGGER#
+
+DELIMITER //
+
+CREATE TRIGGER trg_insert_takim_lideri
+AFTER INSERT ON kullanicilar
+FOR EACH ROW
+BEGIN
+    IF NEW.rol = 'takim_lideri' THEN
+        INSERT INTO takim_lideri (takim_lideri_ad_soyad, sicil_no, grup_yoneticisi_no)
+        VALUES (NEW.kullanici_adi, '2025', 1);
+    END IF;
+
+END;
+DELIMITER;
+
+------------------------------------------------------------------------------------------------------------------------------------
+#GRUP YÖNETİCİSİNİ KAYDEDEN TRIGGER#
+
+DELIMITER //
+
+CREATE TRIGGER trg_insert_grup_yoneticisi
+AFTER INSERT ON kullanicilar
+FOR EACH ROW
+BEGIN
+    IF NEW.rol = 'grup_yoneticisi' THEN
+        INSERT INTO grup_yoneticisi (grup_yoneticisi_ad_soyad, sicil_no, mail_adresi)
+        VALUES (NEW.kullanici_adi, '2026', 'geirenfare@gmail.com');
+    END IF;
+END;
+
+DELIMITER ;
