@@ -118,24 +118,6 @@ def yeni_cagri_ekle(parent_window, listbox, temsilci_no):
 
 
 #MÜŞTERİ TEMSİLCİSİ PRİMLERİNİ GÖRME
-def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
-    db_connection = get_database_connection()
-    if db_connection is None:
-        return 0
-
-    cursor = db_connection.cursor()
-    try:
-        cursor.execute("SELECT aylik_prim_hesapla(%s, %s, %s)", (musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi))
-        prim_miktari = cursor.fetchone()[0]
-    except Exception as e:
-        print(f"Fonksiyonu çalıştırırken hata : {e}")
-        prim_miktari = 0
-    finally:
-        cursor.close()
-        db_connection.close()
-
-    return prim_miktari
-
 
 def itiraz_et(musteri_temsilcisi_no):
     # İtiraz etme işlemi burada yapılacak
@@ -181,9 +163,7 @@ def aylik_prim_listesi_ac(parent_window, musteri_temsilcisi_no):
         if ay <= 0:
             ay += 12
             yil -= 1
-        baslangic_tarihi = f'{yil}-{ay:02d}-01'
-        bitis_tarihi = f'{yil}-{ay:02d}-28'
-        prim_miktari = aylik_prim_hesapla(musteri_temsilcisi_no, baslangic_tarihi, bitis_tarihi)
+        prim_miktari = aylik_prim_hesapla(musteri_temsilcisi_no, ay, yil)
         primler[f"{yil}-{ay:02d}"] = prim_miktari
 
     # Aylık primleri tkinter tablosunda göster

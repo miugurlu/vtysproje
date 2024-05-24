@@ -27,15 +27,15 @@ def get_user_role(username, password):
     return result
 
 
-def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
+def aylik_prim_hesapla(musteri_temsilcisi_id, ay, yil):
     db_connection = get_database_connection()
     if db_connection is None:
         return 0
 
     cursor = db_connection.cursor()
     try:
-        cursor.execute("SELECT aylik_prim_hesapla(%s, %s, %s)",
-                       (musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi))
+        cursor.execute("SELECT aylikPrimHesapla(%s, %s, %s)",
+                       (musteri_temsilcisi_id, ay, yil))
         prim_miktari = cursor.fetchone()[0]
     except Error as e:
         print(f"Fonksiyonu çalıştırırken hata! : {e}")
@@ -45,4 +45,3 @@ def aylik_prim_hesapla(musteri_temsilcisi_id, baslangic_tarihi, bitis_tarihi):
         db_connection.close()
 
     return prim_miktari
-
