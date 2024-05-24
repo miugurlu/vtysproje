@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from database import get_database_connection
+from database import get_database_connection,mail_gonder
 
 def takim_lideri_ekrani_ac(app, takim_lideri_no):
     new_window = tk.Toplevel(app)
@@ -54,6 +54,7 @@ def takim_lideri_ekrani_ac(app, takim_lideri_no):
     else:
         print("Veritabanı bağlantısı sağlanamadı.")
 
+
 def itiraz_cevapla_penceresi_ac(itiraz_no, parent_window, takim_lideri_no):
     def cevap_gonder():
         cevap_aciklamasi = aciklama_entry.get()
@@ -96,5 +97,27 @@ def itiraz_cevapla_penceresi_ac(itiraz_no, parent_window, takim_lideri_no):
     durum_combobox.grid(row=1, column=1, padx=10, pady=10)
 
     # Gönder butonu
-    gonder_button = tk.Button(cevap_penceresi, text="Gönder", command=cevap_gonder)
+    def mail_gonder_ve_cevap_gonder():
+        # Takım liderinin bağlı olduğu grup yöneticisinin mail adresini al
+        db_connection = get_database_connection()
+        if db_connection is not None:
+            cursor = db_connection.cursor()
+            try:
+                query = "SELECT mail_adresi FROM grup_yoneticisi WHERE grup_yoneticisi_no = (SELECT grup_yoneticisi_no FROM takim_lideri WHERE takim_lideri_no = %s)"
+                cursor.execute(query, (takim_lideri_no,))
+                grup_yoneticisi_mail = cursor.fetchone()[0]
+                # Mail gönderme işlemi
+                mail_gonder(mail_icerigi="itiraz cozuldu", mail_address=grup_yoneticisi_mail)
+            except Exception as e:
+                print(f"Mail gönderilirken hata oluştu: {e}")
+            finally:
+                cursor.close()
+                db_connection.close()
+
+        # İtiraz cevabını işle
+        cevap_gonder()
+
+    gonder_button = tk.Button(cevap_penceresi, text="Gönder", command=mail_gonder_ve_cevap_gonder)
     gonder_button.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
+
+

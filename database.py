@@ -14,6 +14,43 @@ def get_database_connection():
         print(f"Error connecting to database: {e}")
         return None
 
+
+import smtplib
+import ssl
+
+
+def mail_gonder(mail_icerigi, mail_address):
+    gondericiEposta = "deneme123yazilimyapimi@gmail.com"
+    gondericiSifre = "shdg xvft hlqp hvxs"
+    smtp_server = "smtp.gmail.com"
+    port = 587
+
+    context = ssl.create_default_context()
+    context.check_hostname = False
+    context.verify_mode = ssl.CERT_NONE
+
+    message = f"""\
+    {mail_icerigi}"""
+
+    try:
+        server = smtplib.SMTP(smtp_server, port)
+        server.ehlo()
+        server.starttls(context=context)
+        server.ehlo()
+        server.login(gondericiEposta, gondericiSifre)
+        server.sendmail(
+            gondericiEposta,
+            mail_address,
+            message
+        )
+        print("Mail başarıyla gönderildi!")
+
+    except Exception as e:
+        print(f"Hata: {e}")
+    finally:
+        server.quit()
+
+
 def get_user_role(username, password):
     connection = get_database_connection()
     if connection is None:

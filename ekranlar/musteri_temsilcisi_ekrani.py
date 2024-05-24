@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
-from database import get_database_connection, aylik_prim_hesapla,prim_ekle
+from database import get_database_connection, aylik_prim_hesapla,prim_ekle,mail_gonder
 from datetime import datetime
-
 def musteri_temsilcisi_ekrani_ac(app, temsilci_no):
     new_window = tk.Toplevel(app)
     new_window.title("Müşteri Temsilcisi")
@@ -138,6 +137,23 @@ def itiraz_et(musteri_temsilcisi_no):
                 try:
                     cursor.callproc("spItirazOlustur", (musteri_temsilcisi_no, aciklama, datetime.now().date()))
                     db_connection.commit()
+
+                    # Grup yöneticisine mail gönderme işlemi
+                    query = "SELECT takim_lideri_no FROM musteri_temsilcisi WHERE musteri_temsilcisi_no = %s"
+                    cursor.execute(query, (musteri_temsilcisi_no,))
+                    takim_lideri_no = cursor.fetchone()[0]
+
+                    query = "SELECT grup_yoneticisi_no FROM takim_lideri WHERE takim_lideri_no = %s"
+                    cursor.execute(query, (takim_lideri_no,))
+                    grup_yoneticisi_no = cursor.fetchone()[0]
+
+                    query = "SELECT mail_adresi FROM grup_yoneticisi WHERE grup_yoneticisi_no = %s"
+                    cursor.execute(query, (grup_yoneticisi_no,))
+                    grup_yoneticisi_mail = cursor.fetchone()[0]
+
+                    # Mail gönderme işlemi
+                    mail_gonder(mail_icerigi="itiraz var", mail_address=grup_yoneticisi_mail)
+
                 except Exception as e:
                     print(f"İtiraz kaydedilirken hata oluştu: {e}")
                 finally:
